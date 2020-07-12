@@ -13,6 +13,8 @@ defmodule GrowUnits do
     response.body
   end
 
+  ## TODO Figure out where to include field name
+
   def coag_parse(response) do
     response =
       response
