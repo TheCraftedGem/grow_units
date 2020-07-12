@@ -50,7 +50,7 @@ defmodule GrowUnitsTest do
   end
 
   test "can adjust max_temp for gdu" do
-    assert GrowUnits.generate_growing_degree_units(10, 100) == 68.00
+    assert GrowUnits.generate_growing_degree_units(10, 100) == 18.00
   end
 
 
