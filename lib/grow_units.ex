@@ -4,7 +4,7 @@ defmodule GrowUnits do
   # plug Tesla.Middleware.Headers, [{"authorization", "token xyz"}]
   plug(Tesla.Middleware.JSON)
 
-  def get_coag_data() do
+  def get_coag_data(_date) do
     {:ok, response} =
       get(
         "https://coagmet.colostate.edu/rawdata_results.php?station=FTC01&start_date=2020-07-10&end_date=2020-07-10&daily=1&qc=1&etr=1"
@@ -14,19 +14,30 @@ defmodule GrowUnits do
   end
 
   ## TODO Figure out where to include field name
+  # webhook for google drive https://developers.google.com/drive/api/v3/push
+  # docs for reading and writing to sheets api https://developers.google.com/sheets/api/guides/concepts
 
   def get_field_name_and_water_date() do
+    # phase 1
     # get field names and water dates
+      # What's the best way?
+    # load field names and water dates into maps
     # Group fields by water date
       # %{
         #  date: 2020/04/17,
-        #  fields: [{field_name: "Some Field name"}]
+        #  fields: [%{field_name: "Some Field name", water_date: 2020/12/09}]
       #  }
     # Iterate through water dates
     # Generate GDU for date
       # return field name and GDU for each field
     # generate report
     # send report to be merged
+
+    #concerns
+      # Will Field Names Always be uniq?
+
+    #phase 2
+    # setup worker
   end
 
   def coag_parse(response) do
