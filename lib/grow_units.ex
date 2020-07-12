@@ -5,7 +5,11 @@ defmodule GrowUnits do
   plug(Tesla.Middleware.JSON)
 
   def get_coag_data() do
-    {:ok, response} = get("https://coagmet.colostate.edu/rawdata_results.php?station=FTC01&start_date=2020-07-10&end_date=2020-07-10&daily=1&qc=1&etr=1")
+    {:ok, response} =
+      get(
+        "https://coagmet.colostate.edu/rawdata_results.php?station=FTC01&start_date=2020-07-10&end_date=2020-07-10&daily=1&qc=1&etr=1"
+      )
+
     response.body
   end
 
@@ -17,7 +21,6 @@ defmodule GrowUnits do
     station =
       response
       |> parse_station_data()
-
 
     date =
       response
@@ -31,13 +34,14 @@ defmodule GrowUnits do
       response
       |> parse_min_temp_data()
 
-    parsed_response =   %{
-        station: station,
-        date: date,
-        max_temp: max_temp,
-        min_temp: min_temp,
-        growing_degree_units: generate_growing_degree_units(min_temp, max_temp)
-      }
+    parsed_response = %{
+      station: station,
+      date: date,
+      max_temp: max_temp,
+      min_temp: min_temp,
+      growing_degree_units: generate_growing_degree_units(min_temp, max_temp)
+    }
+
     parsed_response
   end
 
@@ -72,7 +76,7 @@ defmodule GrowUnits do
   end
 
   def convert_celsius_to_fahrenheit(cels_temp) do
-    (cels_temp * 1.8) + 32
+    (cels_temp * 1.8 + 32)
     |> Float.round(2)
   end
 
@@ -80,7 +84,7 @@ defmodule GrowUnits do
     max_temp = adjust_for_max_temp_threshold(max_temp)
     min_temp = adjust_for_min_temp_threshold(min_temp)
 
-    gdu = ((max_temp + min_temp) / 2) - 50
+    gdu = (max_temp + min_temp) / 2 - 50
 
     gdu
     |> Float.round(2)
@@ -91,7 +95,7 @@ defmodule GrowUnits do
   def adjust_for_min_temp_threshold(min_temp) when min_temp < 50, do: 50
   def adjust_for_min_temp_threshold(min_temp), do: min_temp
 
-  def generate_csv(csv_data) do
+  # def generate_csv(csv_data) do
 
-  end
+  # end
 end
