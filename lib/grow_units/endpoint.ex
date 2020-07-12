@@ -13,13 +13,10 @@ defmodule GrowUnits.Endpoint do
   # responsible for dispatching responses
   plug(:dispatch)
 
-  get "/" do
-    send_resp(conn, 200, "woof")
+  get "/api/v1/:date" do
+    send_resp(conn, 200, GrowUnits.get_coag_data(conn.params))
   end
 
-  match _ do
-    send_resp(conn, 404, "oops... Nothing here :(")
-  end
 
   defp process_events(events) when is_list(events) do
     # Do some processing on a list of events
@@ -37,4 +34,7 @@ defmodule GrowUnits.Endpoint do
 
   # A catchall route, 'match' will match no matter the request method,
   # so a response is always returned, even if there is no route to match.
+  match _ do
+    send_resp(conn, 404, "oops... Nothing here :(")
+  end
 end

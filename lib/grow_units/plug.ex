@@ -3,5 +3,4 @@ defmodule GrowUnits.Plug do
 
   def init(options), do: options
   def call(conn, _opts), do: conn
-
 end

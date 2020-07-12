@@ -1,16 +1,21 @@
 defmodule GrowUnits do
   use Tesla
+  import Plug.Conn
   # plug Tesla.Middleware.BaseUrl, "https://api.github.com"
   # plug Tesla.Middleware.Headers, [{"authorization", "token xyz"}]
   plug(Tesla.Middleware.JSON)
 
-  def get_coag_data() do
+  def get_coag_data(date) do
+    date = date_params(date)
+
     {:ok, response} =
       get(
-        "https://coagmet.colostate.edu/rawdata_results.php?station=FTC01&start_date=2020-07-10&end_date=2020-07-10&daily=1&qc=1&etr=1"
+        "https://coagmet.colostate.edu/rawdata_results.php?station=FTC01&start_date=#{date}&end_date=#{date}&daily=1&qc=1&etr=1"
       )
 
-    response.body
+  {:ok, body} =  response.body
+    |> coag_parse()
+    body
   end
 
   ## TODO Figure out where to include field name
@@ -19,6 +24,12 @@ defmodule GrowUnits do
 
   def get_field_name_and_water_date() do
 
+  end
+
+  def date_params(date) do
+    date["date"]
+    |> String.split("=")
+    |> Enum.at(1)
   end
 
   def coag_parse(response) do
@@ -50,7 +61,7 @@ defmodule GrowUnits do
       growing_degree_units: generate_growing_degree_units(min_temp, max_temp)
     }
 
-    parsed_response
+    Jason.encode(parsed_response)
   end
 
   def parse_station_data(response) do
@@ -102,8 +113,4 @@ defmodule GrowUnits do
   def adjust_for_max_temp_threshold(max_temp), do: max_temp
   def adjust_for_min_temp_threshold(min_temp) when min_temp < 50, do: 50
   def adjust_for_min_temp_threshold(min_temp), do: min_temp
-
-  # def generate_csv(csv_data) do
-
-  # end
 end
