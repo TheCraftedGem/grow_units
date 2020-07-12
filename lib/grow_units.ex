@@ -15,6 +15,20 @@ defmodule GrowUnits do
 
   ## TODO Figure out where to include field name
 
+  def get_field_name_and_water_date() do
+    # get field names and water dates
+    # Group fields by water date
+      # %{
+        #  date: 2020/04/17,
+        #  fields: [{field_name: "Some Field name"}]
+      #  }
+    # Iterate through water dates
+    # Generate GDU for date
+      # return field name and GDU for each field
+    # generate report
+    # send report to be merged
+  end
+
   def coag_parse(response) do
     response =
       response
