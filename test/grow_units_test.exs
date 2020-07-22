@@ -38,8 +38,9 @@ defmodule GrowUnitsTest do
 
   test "can make successful request to coagnet" do
     expected =
-      GrowUnits.get_coag_data()
+      GrowUnits.get_coag_data(%{"date" =>  "2020-07-10"})
       |> GrowUnits.coag_parse()
+      |> IO.inspect()
 
     assert expected[:station] == "ftc01"
   end

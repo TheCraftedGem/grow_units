@@ -1,12 +1,8 @@
 defmodule GrowUnits do
   use Tesla
-  import Plug.Conn
-  # plug Tesla.Middleware.BaseUrl, "https://api.github.com"
-  # plug Tesla.Middleware.Headers, [{"authorization", "token xyz"}]
-  plug(Tesla.Middleware.JSON)
 
-  def get_coag_data(date) do
-    date = date_params(date)
+  def get_coag_data(params) do
+    date = params["date"]
 
     {:ok, response} =
       get(
@@ -18,18 +14,16 @@ defmodule GrowUnits do
     body
   end
 
-  ## TODO Figure out where to include field name
-  # webhook for google drive https://developers.google.com/drive/api/v3/push
-  # docs for reading and writing to sheets api https://developers.google.com/sheets/api/guides/concepts
+  def sheets_client do
+    {:ok, token} =  Goth.Token.for_scope("https://www.googleapis.com/auth/spreadsheets")
+    sheet_address =  "https://sheets.googleapis.com/v4/spreadsheets/1i7w9RP-Y-1Ug6hKVxX8jL80x43VfbUo3ZJxR6sEzh4Y/values/range=A1:B2"
 
-  def get_field_name_and_water_date() do
+    middleware = [
+      {Tesla.Middleware.Headers, [{"authorization", "Bearer " <> token.token }]}
+    ]
 
-  end
-
-  def date_params(date) do
-    date["date"]
-    |> String.split("=")
-    |> Enum.at(1)
+    Tesla.client(middleware)
+    |> get(sheet_address)
   end
 
   def coag_parse(response) do

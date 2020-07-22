@@ -26,7 +26,7 @@ defmodule GrowUnits.MixProject do
       {:tesla, "~> 1.3.0"},
       {:plug_cowboy, "~> 2.0"},
       {:hackney, "~> 1.15.2"},
-      {:elixir_auth_google, "~> 1.2"},
+      {:goth, "~> 1.1.0"},
 
       # optional, required by JSON middleware
       {:jason, ">= 1.0.0"}
