@@ -16,7 +16,7 @@ defmodule GrowUnits do
 
   def sheets_client do
     {:ok, token} =  Goth.Token.for_scope("https://www.googleapis.com/auth/spreadsheets")
-    sheet_address =  "https://sheets.googleapis.com/v4/spreadsheets/1i7w9RP-Y-1Ug6hKVxX8jL80x43VfbUo3ZJxR6sEzh4Y/values/range=A1:B2"
+    sheet_address =  "https://sheets.googleapis.com/v4/spreadsheets/1i7w9RP-Y-1Ug6hKVxX8jL80x43VfbUo3ZJxR6sEzh4Y/values/Sheet1"
 
     middleware = [
       {Tesla.Middleware.Headers, [{"authorization", "Bearer " <> token.token }]}
