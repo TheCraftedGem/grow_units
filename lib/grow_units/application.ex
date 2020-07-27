@@ -11,6 +11,7 @@ defmodule GrowUnits.Application do
         options: [port: 4001]
       )
     ]
+
     opts = [strategy: :one_for_one, name: GrowUnits.Supervisor]
 
     Logger.info("Starting application...")

@@ -16,7 +16,6 @@ defmodule GrowUnits.MixProject do
     [
       extra_applications: [:logger, :plug_cowboy],
       mod: {GrowUnits.Application, []}
-
     ]
   end
 

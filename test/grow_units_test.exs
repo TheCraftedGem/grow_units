@@ -38,7 +38,7 @@ defmodule GrowUnitsTest do
 
   test "can make successful request to coagnet" do
     expected =
-      GrowUnits.get_coag_data(%{"date" =>  "2020-07-10"})
+      GrowUnits.get_coag_data(%{"date" => "2020-07-10"})
       |> GrowUnits.coag_parse()
       |> IO.inspect()
 
