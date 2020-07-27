@@ -15,7 +15,7 @@ defmodule GrowUnits do
 
     {:ok, oth01} =
       get(
-        "https://coagmet.colostate.edu/rawdata_results.php?station=OTH011&start_date=2020-01-01&end_date=#{
+        "https://coagmet.colostate.edu/rawdata_results.php?station=OTH01&start_date=2020-01-01&end_date=#{
           today
         }&daily=1&qc=1&etr=1"
       )
@@ -64,44 +64,39 @@ defmodule GrowUnits do
     |> Enum.map(fn x -> x |> String.split(",") end)
   end
 
-  def coag_parse(response) when is_list(response) do
-   x =  response
-    |> Enum.map(fn station_data ->
+  def coag_parse([first_station, second_station, third_station]) do
+    first_station = parse_station_data_for_range(first_station)
+    second_station = parse_station_data_for_range(second_station)
+    third_station = parse_station_data_for_range(third_station)
 
+    [Jason.encode(first_station), Jason.encode(second_station), Jason.encode(third_station)]
+  end
+
+  def parse_station_data_for_range(station) do
+    station
+    |> Enum.map(fn station_data ->
       station =
         station_data
-        |> Enum.map(&parse_station_data/1)
+        |> parse_station_data()
 
       date =
         station_data
-        |> Enum.map(&parse_date_data/1)
+        |> parse_date_data()
 
       max_temp =
         station_data
-        |> Enum.map(&parse_max_temp_data/1)
+        |> parse_max_temp_data()
 
       min_temp =
         station_data
-        |> Enum.map(&parse_min_temp_data/1)
+        |> parse_min_temp_data()
 
       parsed_response = %{
         station: station,
         date: date,
         growing_degree_units: generate_growing_degree_units(min_temp, max_temp)
       }
-
-      Jason.encode(parsed_response)
     end)
- require IEx; IEx.pry
-  end
-
-  def coag_parse([first_station_data, second_station_data, third_station_data]) do
-    first_station_data = first_station_data
-    |> Enum.map(&coag_parse/1)
-    second_station_data = second_station_data
-    |> Enum.map(&coag_parse/1)
-    third_station_data = third_station_data
-    |> Enum.map(&coag_parse/1)
   end
 
   def coag_parse(first_station, second_station, third_station) do
@@ -113,11 +108,11 @@ defmodule GrowUnits do
       second_station
       |> coag_parse()
 
-    third_station_respone =
+    third_station_response =
       third_station
       |> coag_parse()
 
-    coag_parse([first_station_response, second_station_response, third_station_respone])
+    coag_parse([first_station_response, second_station_response, third_station_response])
   end
 
   def parse_station_data(response) do
@@ -131,23 +126,35 @@ defmodule GrowUnits do
   end
 
   def parse_max_temp_data(response) do
-    {temp, _} =
-      response
-      |> Enum.at(3)
-      |> Float.parse()
+    case response |> Enum.at(3) |> Float.parse() do
+      :error ->
+        "MISSING TEMP"
 
-    temp
-    |> convert_celsius_to_fahrenheit()
+      _ ->
+        {temp, _} =
+          response
+          |> Enum.at(3)
+          |> Float.parse()
+
+        temp
+        |> convert_celsius_to_fahrenheit()
+    end
   end
 
   def parse_min_temp_data(response) do
-    {temp, _} =
-      response
-      |> Enum.at(5)
-      |> Float.parse()
+    case response |> Enum.at(5) |> Float.parse() do
+      :error ->
+        "MISSING TEMP"
 
-    temp
-    |> convert_celsius_to_fahrenheit()
+      _ ->
+        {temp, _} =
+          response
+          |> Enum.at(5)
+          |> Float.parse()
+
+        temp
+        |> convert_celsius_to_fahrenheit()
+    end
   end
 
   def convert_celsius_to_fahrenheit(cels_temp) do
@@ -156,13 +163,19 @@ defmodule GrowUnits do
   end
 
   def generate_growing_degree_units(min_temp, max_temp) do
-    max_temp = adjust_for_max_temp_threshold(max_temp)
-    min_temp = adjust_for_min_temp_threshold(min_temp)
+    case max_temp == "MISSING TEMP" || min_temp == "MISSING TEMP" do
+      true ->
+        "NOT AVAILABLE"
 
-    gdu = (max_temp + min_temp) / 2 - 50
+      false ->
+        max_temp = adjust_for_max_temp_threshold(max_temp)
+        min_temp = adjust_for_min_temp_threshold(min_temp)
 
-    gdu
-    |> Float.round(2)
+        gdu = (max_temp + min_temp) / 2 - 50
+
+        gdu
+        |> Float.round(2)
+    end
   end
 
   def adjust_for_max_temp_threshold(max_temp) when max_temp > 86, do: 86
