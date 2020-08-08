@@ -10,7 +10,7 @@ use Mix.Config
 # which you should run after static files are built and
 # before starting your production server.
 
-config :feedback_api, FeedbackApiWeb.Endpoint,
+config :grow_units, GrowUnits.Endpoint,
   http: [port: {:system, "PORT"}],
   load_from_system_env: true,
   url: [scheme: "https", host: "polar-fjord-23802.herokuapp.com", port: 443],
