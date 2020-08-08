@@ -103,9 +103,11 @@ defmodule GrowUnits do
        [{"authorization", "Bearer " <> token.token}, {"content-type", "application/json"}]}
     ]
 
-    Tesla.client(middleware)
-    |> post(sheet_address, params)
-    |> IO.inspect()
+    {:ok, response} =
+      Tesla.client(middleware)
+      |> post(sheet_address, params)
+
+    response.status |> IO.inspect()
   end
 
   def coag_parse(response) when is_binary(response) do

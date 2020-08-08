@@ -1,5 +1,3 @@
- 2.59 KB
-
 use Mix.Config
 
 # For production, don't forget to configure the url host
