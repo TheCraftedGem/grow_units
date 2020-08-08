@@ -4,7 +4,7 @@ defmodule GrowUnits.Application do
 
   def start(_type, _args) do
     children = [
-      { GrowUnits.DailyWorker.Supervisor, [] },
+      {GrowUnits.DailyWorker.Supervisor, []},
       # Use Plug.Cowboy.child_spec/3 to register our endpoint as a plug
       Plug.Cowboy.child_spec(
         scheme: :http,

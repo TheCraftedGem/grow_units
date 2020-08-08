@@ -5,7 +5,6 @@ defmodule GrowUnits.DailyWorker.Supervisor do
     Supervisor.start_link(__MODULE__, init_arg, name: __MODULE__)
   end
 
-
   @impl true
   def init(_init_arg) do
     children = [
@@ -16,7 +15,6 @@ defmodule GrowUnits.DailyWorker.Supervisor do
   end
 end
 
-
 defmodule GrowUnits.DailyWorker do
   use GenServer
 
@@ -26,14 +24,11 @@ defmodule GrowUnits.DailyWorker do
 
   @impl true
   def init(stack) do
-
     {:ok, stack, {:continue, :start_timer}}
   end
 
-
   @impl true
   def handle_continue(:start_timer, state) do
-
     # Start timer here
     {:noreply, state}
   end

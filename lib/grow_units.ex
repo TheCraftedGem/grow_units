@@ -46,16 +46,65 @@ defmodule GrowUnits do
 
   def sheets_client do
     {:ok, token} = Goth.Token.for_scope("https://www.googleapis.com/auth/spreadsheets")
+    [first_station, second_station, third_station] = get_coag_data()
+
+    params = %{
+      "data" => [
+        %{
+          # CTRO DATES
+          "range" => "B1:1",
+          "values" => [
+            first_station |> Enum.flat_map(& &1[:date])
+          ]
+        },
+        %{
+          "range" => "B2:2",
+          "values" => [
+            first_station |> Enum.flat_map(& &1[:growing_degree_units])
+          ]
+        },
+        %{
+          # RFD0 DATES
+          "range" => "B6:6",
+          "values" => [
+            second_station |> Enum.flat_map(& &1[:date])
+          ]
+        },
+        %{
+          "range" => "B7:7",
+          "values" => [
+            second_station |> Enum.flat_map(& &1[:growing_degree_units])
+          ]
+        },
+        %{
+          # OTH01 DATES
+          "range" => "B11:11",
+          "values" => [
+            third_station |> Enum.flat_map(& &1[:date])
+          ]
+        },
+        %{
+          "range" => "B12:12",
+          "values" => [
+            third_station |> Enum.flat_map(& &1[:growing_degree_units])
+          ]
+        }
+      ],
+      "valueInputOption" => "RAW"
+    }
+
+    {:ok, params} = Jason.encode(params)
 
     sheet_address =
-      "https://sheets.googleapis.com/v4/spreadsheets/1i7w9RP-Y-1Ug6hKVxX8jL80x43VfbUo3ZJxR6sEzh4Y/values/Sheet1"
+      "https://sheets.googleapis.com/v4/spreadsheets/1i7w9RP-Y-1Ug6hKVxX8jL80x43VfbUo3ZJxR6sEzh4Y/values:batchUpdate"
 
     middleware = [
-      {Tesla.Middleware.Headers, [{"authorization", "Bearer " <> token.token}]}
+      {Tesla.Middleware.Headers,
+       [{"authorization", "Bearer " <> token.token}, {"content-type", "application/json"}]}
     ]
 
     Tesla.client(middleware)
-    |> get(sheet_address)
+    |> post(sheet_address, params)
   end
 
   def coag_parse(response) when is_binary(response) do
@@ -68,8 +117,7 @@ defmodule GrowUnits do
     first_station = parse_station_data_for_range(first_station)
     second_station = parse_station_data_for_range(second_station)
     third_station = parse_station_data_for_range(third_station)
-
-    [Jason.encode(first_station), Jason.encode(second_station), Jason.encode(third_station)]
+    [first_station, second_station, third_station]
   end
 
   def parse_station_data_for_range(station) do
@@ -91,10 +139,10 @@ defmodule GrowUnits do
         station_data
         |> parse_min_temp_data()
 
-      parsed_response = %{
-        station: station,
-        date: date,
-        growing_degree_units: generate_growing_degree_units(min_temp, max_temp)
+      %{
+        station: [station],
+        date: [date],
+        growing_degree_units: [generate_growing_degree_units(min_temp, max_temp)]
       }
     end)
   end
@@ -152,8 +200,7 @@ defmodule GrowUnits do
           |> Enum.at(5)
           |> Float.parse()
 
-        temp
-        |> convert_celsius_to_fahrenheit()
+        temp |> convert_celsius_to_fahrenheit()
     end
   end
 
@@ -179,7 +226,10 @@ defmodule GrowUnits do
   end
 
   def adjust_for_max_temp_threshold(max_temp) when max_temp > 86, do: 86
+  def adjust_for_max_temp_threshold(max_temp) when max_temp < 50, do: 50
   def adjust_for_max_temp_threshold(max_temp), do: max_temp
+
   def adjust_for_min_temp_threshold(min_temp) when min_temp < 50, do: 50
+  def adjust_for_min_temp_threshold(min_temp) when min_temp > 86, do: 86
   def adjust_for_min_temp_threshold(min_temp), do: min_temp
 end
