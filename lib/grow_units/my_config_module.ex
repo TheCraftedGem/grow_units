@@ -3,6 +3,6 @@ defmodule MyConfigModule do
 
   def init(config) do
     {:ok,
-     Keyword.put(config, :json, File.read!(System.get_env("GOOGLE_APPLICATION_CREDENTIALS")))}
+     Keyword.put(config, :json, System.get_env("GOOGLE_APPLICATION_CREDENTIALS"))}
   end
 end
