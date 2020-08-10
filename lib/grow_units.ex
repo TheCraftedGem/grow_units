@@ -46,6 +46,26 @@ defmodule GrowUnits do
 
   def sheets_client do
     {:ok, token} = Goth.Token.for_scope("https://www.googleapis.com/auth/spreadsheets")
+
+    middleware = [
+      {Tesla.Middleware.Headers,
+       [{"authorization", "Bearer " <> token.token}, {"content-type", "application/json"}]}
+    ]
+
+    sheet_address = System.get_env("GOOGLE_SHEET_ADDRESS")
+    request_body = google_sheets_params()
+
+    {:ok, response} =
+      Tesla.client(middleware)
+      |> post(sheet_address, request_body)
+
+    case response.status do
+      200 -> IO.inspect("Status Code: 200, Message: Sheet Sucessfully Updated")
+      _ -> IO.inspect("Error: Update Failed")
+    end
+  end
+
+  def google_sheets_params() do
     [first_station, second_station, third_station] = get_coag_data()
 
     params = %{
@@ -94,20 +114,7 @@ defmodule GrowUnits do
     }
 
     {:ok, params} = Jason.encode(params)
-
-    sheet_address =
-      "https://sheets.googleapis.com/v4/spreadsheets/1i7w9RP-Y-1Ug6hKVxX8jL80x43VfbUo3ZJxR6sEzh4Y/values:batchUpdate"
-
-    middleware = [
-      {Tesla.Middleware.Headers,
-       [{"authorization", "Bearer " <> token.token}, {"content-type", "application/json"}]}
-    ]
-
-    {:ok, response} =
-      Tesla.client(middleware)
-      |> post(sheet_address, params)
-
-    response.status |> IO.inspect()
+    params
   end
 
   def coag_parse(response) when is_binary(response) do
@@ -218,8 +225,8 @@ defmodule GrowUnits do
         "NOT AVAILABLE"
 
       false ->
-        max_temp = adjust_for_max_temp_threshold(max_temp)
-        min_temp = adjust_for_min_temp_threshold(min_temp)
+        max_temp = adjust_for_gdu_temp_threshold(max_temp)
+        min_temp = adjust_for_gdu_temp_threshold(min_temp)
 
         gdu = (max_temp + min_temp) / 2 - 50
 
@@ -228,11 +235,7 @@ defmodule GrowUnits do
     end
   end
 
-  def adjust_for_max_temp_threshold(max_temp) when max_temp > 86, do: 86
-  def adjust_for_max_temp_threshold(max_temp) when max_temp < 50, do: 50
-  def adjust_for_max_temp_threshold(max_temp), do: max_temp
-
-  def adjust_for_min_temp_threshold(min_temp) when min_temp < 50, do: 50
-  def adjust_for_min_temp_threshold(min_temp) when min_temp > 86, do: 86
-  def adjust_for_min_temp_threshold(min_temp), do: min_temp
+  def adjust_for_gdu_temp_threshold(temp) when temp > 86, do: 86
+  def adjust_for_gdu_temp_threshold(temp) when temp < 50, do: 50
+  def adjust_for_gdu_temp_threshold(temp), do: temp
 end
